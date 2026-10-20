@@ -1,0 +1,6 @@
+--------- beginning of system
+--------- beginning of main
+--------- beginning of kernel
+10-20 07:21:01.621  5054  5054 I CODBlackOps: Launcher dibuka
+10-20 07:21:04.605  5054  5246 I CODBlackOps: Pindai selesai: 3 file kandidat, 0 siap dijalankan
+10-20 07:21:11.889  5054  5246 I CODBlackOps: Pindai selesai: 3 file kandidat, 0 siap dijalankan

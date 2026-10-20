@@ -1,0 +1,17 @@
+PASS apk_installs
+PASS dolphin_core_loaded_and_initialised
+PASS scan_counts_three_candidates
+PASS gc_image_listed
+PASS gc_image_validated_by_dolphin_as_other_game
+PASS disc_header_title_shown
+PASS invalid_images_flagged
+PASS non_disc_file_ignored
+PASS save_folder_created
+PASS graphics_screen_shows_resolutions
+PASS controls_screen_renders
+PASS performance_screen_renders
+PASS app_process_alive
+PASS no_fatal_exception
+PASS no_native_crash
+---
+SMOKE TEST PASSED

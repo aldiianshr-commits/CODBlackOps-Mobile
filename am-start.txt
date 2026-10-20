@@ -1,0 +1,7 @@
+Starting: Intent { cmp=com.codblackops.mobile/.ui.LauncherActivity }
+Status: ok
+LaunchState: COLD
+Activity: com.codblackops.mobile/.ui.LauncherActivity
+TotalTime: 2285
+WaitTime: 2311
+Complete
