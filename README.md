@@ -256,6 +256,10 @@ Yang diuji otomatis di setiap build:
    file non-disc diabaikan, tab Grafis/Kontrol/Performa tampil, tanpa crash Java maupun native.
    Bukti (UI dump, screenshot, logcat) tersimpan di branch `ci-smoke` dan artifact Actions.
 
+Hasil terakhir (build v0.1.4): 15/15 pemeriksaan smoke test lulus di emulator tablet (Pixel C,
+Android 11, translasi ARM64): APK terpasang, core Dolphin 2609a termuat dan terinisialisasi,
+pemindaian dan validasi benar, tanpa crash.
+
 Yang **belum** bisa diuji di sini:
 - Boot dan gameplay Black Ops (tidak ada file game; emulator x86 dengan translasi ARM tidak cocok
   untuk JIT Dolphin).
