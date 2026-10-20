@@ -1,0 +1,6 @@
+96:C/C++: /usr/local/lib/android/sdk/ndk/30.0.15729638/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/string.h:125:20: note: 'strtok' has been explicitly marked deprecated here
+102:C/C++: /usr/local/lib/android/sdk/ndk/30.0.15729638/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/string.h:125:20: note: 'strtok' has been explicitly marked deprecated here
+108:C/C++: /usr/local/lib/android/sdk/ndk/30.0.15729638/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/string.h:125:20: note: 'strtok' has been explicitly marked deprecated here
+114:C/C++: /usr/local/lib/android/sdk/ndk/30.0.15729638/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/string.h:125:20: note: 'strtok' has been explicitly marked deprecated here
+120:C/C++: /usr/local/lib/android/sdk/ndk/30.0.15729638/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/string.h:125:20: note: 'strtok' has been explicitly marked deprecated here
+278:BUILD SUCCESSFUL in 13m 9s

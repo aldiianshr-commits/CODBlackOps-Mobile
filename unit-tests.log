@@ -1,0 +1,120 @@
+
+Welcome to Gradle 9.6.1!
+
+Here are the highlights of this release:
+ - Improved Configuration Cache hit rates
+ - Additional CLI rendering options
+ - Important project hierarchy lookup deprecations
+
+For more details see https://docs.gradle.org/9.6.1/release-notes.html
+
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/9.6.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+
+> Configure project :app
+WARNING: The option setting 'android.enableJetifier=true' is deprecated.
+The current default is 'false'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:dataBindingMergeDependencyArtifactsDebug
+> Task :app:generateDebugResValues
+> Task :app:generateDebugResources
+
+> Task :app:mergeDebugResources
+/home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/res/values/strings.xml:690:4: Multiple substitutions specified in non-positional format of string resource string/slider_setting_float_value. Did you mean to add the formatted="false" attribute?
+/home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/res/values/strings.xml:88:4: Multiple substitutions specified in non-positional format of string resource string/slider_setting_value. Did you mean to add the formatted="false" attribute?
+
+> Task :app:generateDebugBuildConfig
+> Task :app:packageDebugResources
+> Task :app:processDebugNavigationResources
+> Task :app:parseDebugLocalResources
+> Task :app:dataBindingGenBaseClassesDebug
+> Task :app:javaPreCompileDebug
+> Task :app:mapDebugSourceSetPaths
+> Task :app:checkDebugAarMetadata
+> Task :app:compileDebugNavigationResources
+> Task :app:createDebugCompatibleScreenManifests
+> Task :app:extractDeepLinksDebug
+> Task :app:generateDebugRFile
+> Task :app:processDebugMainManifest
+> Task :app:processDebugManifest
+> Task :app:preDebugUnitTestBuild UP-TO-DATE
+> Task :app:javaPreCompileDebugUnitTest
+> Task :app:processDebugManifestForPackage
+> Task :app:processDebugResources
+> Task :app:compileDebugKotlin
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/com/codblackops/mobile/dolphin/GpuDrivers.kt:64:9 'when' is exhaustive so 'else' is redundant here.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/NativeLibrary.kt:588:57 'field scaledDensity: Float' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/NativeLibrary.kt:591:59 'field scaledDensity: Float' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/activities/ConvertActivity.kt:50:9 'fun onBackPressed(): Unit' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/activities/CustomFilePickerActivity.kt:18:33 'fun getSerializableExtra(p0: String!): Serializable?' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/activities/CustomFilePickerActivity.kt:18:72 Unchecked cast of 'Serializable?' to 'HashSet<String>?'.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/activities/EmulationActivity.kt:324:68 'val defaultDisplay: Display!' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/activities/EmulationActivity.kt:363:18 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/activities/EmulationActivity.kt:447:28 'static fun getLayoutDirection(p0: View): Int' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/activities/EmulationActivity.kt:447:64 'static field LAYOUT_DIRECTION_LTR: Int' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/activities/UserDataActivity.kt:132:9 'fun onBackPressed(): Unit' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/activities/UserDataActivity.kt:163:9 'fun overridePendingTransition(p0: Int, p1: Int): Unit' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/activities/UserDataActivity.kt:165:9 'fun overridePendingTransition(p0: Int, p1: Int): Unit' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/adapters/PlatformPagerAdapter.kt:16:5 'class FragmentPagerAdapter : PagerAdapter' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/dialogs/AlertMessage.kt:33:48 'static field yes: Int' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/dialogs/AlertMessage.kt:36:48 'static field no: Int' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/features/cheats/ui/CheatsActivity.kt:119:30 'static fun getLayoutDirection(p0: View): Int' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/features/cheats/ui/CheatsActivity.kt:119:70 'static field LAYOUT_DIRECTION_RTL: Int' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/features/cheats/ui/CheatsActivity.kt:124:30 'static fun getLayoutDirection(p0: View): Int' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/features/cheats/ui/CheatsActivity.kt:124:70 'static field LAYOUT_DIRECTION_RTL: Int' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/features/cheats/ui/CheatsActivity.kt:153:9 'fun onBackPressed(): Unit' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/features/input/model/DolphinSensorEventListener.kt:103:29 'static field TYPE_TEMPERATURE: Int' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/features/netplay/NetplaySession.kt:476:41 Expression is unused.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/features/netplay/ui/NetplaySetupScreen.kt:323:29 'typealias MenuAnchorType = ExposedDropdownMenuAnchorType' is deprecated. Renamed to ExposedDropdownMenuAnchorType.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/features/riivolution/ui/RiivolutionBootActivity.kt:78:9 'fun onBackPressed(): Unit' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/features/riivolution/ui/RiivolutionViewHolder.kt:32:30 'fun setTextAppearance(p0: Context!, p1: Int): Unit' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/features/settings/ui/SettingsAdapter.kt:313:22 'fun setColorFilter(p0: Int, p1: PorterDuff.Mode): Unit' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/features/settings/ui/SettingsAdapter.kt:346:22 'fun setColorFilter(p0: Int, p1: PorterDuff.Mode): Unit' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/features/sysupdate/ui/SystemUpdateResultFragment.kt:22:52 Redundant call of conversion method.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/fragments/MenuFragment.kt:93:28 'static fun getLayoutDirection(p0: View): Int' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/fragments/MenuFragment.kt:93:64 'static field LAYOUT_DIRECTION_LTR: Int' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/overlay/InputOverlay.kt:1430:59 'val defaultDisplay: Display!' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/overlay/InputOverlay.kt:1432:17 'fun getMetrics(p0: DisplayMetrics!): Unit' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/overlay/InputOverlay.kt:1538:59 'val defaultDisplay: Display!' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/overlay/InputOverlay.kt:1540:17 'fun getMetrics(p0: DisplayMetrics!): Unit' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/overlay/InputOverlay.kt:1647:59 'val defaultDisplay: Display!' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/overlay/InputOverlay.kt:1649:17 'fun getMetrics(p0: DisplayMetrics!): Unit' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/overlay/InputOverlay.kt:1755:59 'val defaultDisplay: Display!' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/overlay/InputOverlay.kt:1757:17 'fun getMetrics(p0: DisplayMetrics!): Unit' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/overlay/InputOverlay.kt:1824:59 'val defaultDisplay: Display!' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/overlay/InputOverlay.kt:1826:17 'fun getMetrics(p0: DisplayMetrics!): Unit' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/overlay/InputOverlay.kt:1948:59 'val defaultDisplay: Display!' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/overlay/InputOverlay.kt:1950:17 'fun getMetrics(p0: DisplayMetrics!): Unit' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/overlay/InputOverlay.kt:2017:59 'val defaultDisplay: Display!' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/overlay/InputOverlay.kt:2019:17 'fun getMetrics(p0: DisplayMetrics!): Unit' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/overlay/InputOverlay.kt:2149:59 'val defaultDisplay: Display!' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/overlay/InputOverlay.kt:2151:17 'fun getMetrics(p0: DisplayMetrics!): Unit' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/services/SyncChannelJobService.kt:31:26 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/services/SyncChannelJobService.kt:51:22 This declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/ui/platform/PlatformGamesFragment.kt:76:50 'fun getSerializable(p0: String?): Serializable?' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/utils/SerializableHelper.kt:15:13 'fun getSerializableExtra(p0: String!): Serializable?' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/utils/SerializableHelper.kt:22:13 'fun getSerializable(p0: String?): Serializable?' is deprecated. Deprecated in Java.
+w: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/utils/ThemeHelper.kt:149:25 'var statusBarColor: Int' is deprecated. Deprecated in Java.
+
+> Task :app:compileDebugJavaWithJavac
+> Task :app:processDebugJavaRes
+> Task :app:bundleDebugClassesToCompileJar
+> Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:compileDebugUnitTestKotlin NO-SOURCE
+> Task :app:compileDebugUnitTestJavaWithJavac
+> Task :app:processDebugUnitTestJavaRes NO-SOURCE
+> Task :app:testDebugUnitTest
+
+[Incubating] Problems report is available at: file:///home/runner/work/CODBlackOps-Mobile/CODBlackOps-Mobile/build/dolphin/Source/Android/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.6.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 1m 8s
+28 actionable tasks: 28 executed
