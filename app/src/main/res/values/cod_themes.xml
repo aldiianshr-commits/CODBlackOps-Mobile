@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="cod_ic_launcher_background">#000000</color>
+    <color name="cod_background">#0D0F11</color>
+    <color name="cod_orange">#FF7A1A</color>
+
+    <style name="Theme.CodBlackOps" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/cod_orange</item>
+        <item name="android:windowBackground">@color/cod_background</item>
+        <item name="android:statusBarColor">@color/cod_background</item>
+        <item name="android:navigationBarColor">@color/cod_background</item>
+    </style>
+
+    <style name="Theme.CodBlackOps.Fullscreen">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+</resources>

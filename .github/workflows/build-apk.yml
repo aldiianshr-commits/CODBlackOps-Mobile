@@ -1,0 +1,179 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["README.md", "docs/**", "LICENSE"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: ARM64 APK (Dolphin backend)
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      DOLPHIN_DIR: ${{ github.workspace }}/build/dolphin
+      LOG_DIR: ${{ github.workspace }}/ci-logs
+      USE_CCACHE: "1"
+      NDK_VERSION: "30.0.15729638"
+      GRADLE_OPTS: "-Dorg.gradle.daemon=false"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /opt/ghc /usr/local/.ghcup /usr/local/share/boost \
+            /opt/hostedtoolcache/CodeQL /usr/local/lib/node_modules /usr/share/swift || true
+          mkdir -p "$LOG_DIR"
+          df -h / | tee "$LOG_DIR/disk.txt"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Launcher logic tests (plain JDK)
+        id: logic
+        run: |
+          set -o pipefail
+          bash scripts/local_test.sh 2>&1 | tee "$LOG_DIR/logic-tests.log"
+
+      - name: Prepare Dolphin 2609a + integration patch
+        id: prepare
+        run: |
+          set -o pipefail
+          bash scripts/prepare_dolphin.sh "$DOLPHIN_DIR" 2>&1 | tee "$LOG_DIR/prepare.log"
+
+      - name: Install Android SDK packages (NDK, CMake)
+        id: sdk
+        run: |
+          set -o pipefail
+          SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKM" --licenses > /dev/null || true
+          CMAKE_PKG=$("$SDKM" --list 2>/dev/null | grep -o 'cmake;[0-9][0-9.]*' | sort -uV | tail -1)
+          echo "Using $CMAKE_PKG"
+          "$SDKM" --install "ndk;$NDK_VERSION" "$CMAKE_PKG" 2>&1 | tail -5 | tee "$LOG_DIR/sdk.log"
+          echo "cmake.dir=$ANDROID_HOME/cmake/${CMAKE_PKG#cmake;}" > "$DOLPHIN_DIR/Source/Android/local.properties"
+          echo "sdk.dir=$ANDROID_HOME" >> "$DOLPHIN_DIR/Source/Android/local.properties"
+          cat "$DOLPHIN_DIR/Source/Android/local.properties" | tee -a "$LOG_DIR/sdk.log"
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: dolphin-android-arm64-${{ hashFiles('dolphin.version', 'patches/**') }}
+          max-size: 3G
+
+      - name: Gradle caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('dolphin.version') }}
+          restore-keys: gradle-
+
+      - name: Compile Kotlin + JUnit tests (fast fail)
+        id: unittests
+        working-directory: build/dolphin/Source/Android
+        run: |
+          set -o pipefail
+          ./gradlew :app:testDebugUnitTest --stacktrace 2>&1 | tee "$LOG_DIR/unit-tests.log"
+
+      - name: Build release APK (native Dolphin core + launcher)
+        id: assemble
+        working-directory: build/dolphin/Source/Android
+        env:
+          RELEASE_KEYSTORE_B64: ${{ secrets.RELEASE_KEYSTORE_B64 }}
+          RELEASE_STORE_PASS: ${{ secrets.RELEASE_STORE_PASS }}
+          RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
+          RELEASE_KEY_PASS: ${{ secrets.RELEASE_KEY_PASS }}
+        run: |
+          set -o pipefail
+          # Private key from the RELEASE_KEYSTORE_B64 secret when configured; otherwise the public
+          # test key in keystore/ (keeps every CI build installable as an update; see README).
+          KS="$GITHUB_WORKSPACE/keystore/codbo-release.jks"; SP=codblackops; KA=codbo; KP=codblackops
+          if [ -n "${RELEASE_KEYSTORE_B64:-}" ]; then
+            echo "$RELEASE_KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+            KS="$RUNNER_TEMP/release.jks"; SP="$RELEASE_STORE_PASS"; KA="$RELEASE_KEY_ALIAS"; KP="$RELEASE_KEY_PASS"
+            echo "Signing with private release key from secrets"
+          else
+            echo "::warning::RELEASE_KEYSTORE_B64 not set - signing with the public test key in keystore/"
+          fi
+          ./gradlew :app:assembleRelease \
+            -Pkeystore="$KS" -Pstorepass="$SP" -Pkeyalias="$KA" -Pkeypass="$KP" \
+            -PcodVersionCode=${{ github.run_number }} -PcodVersionName=0.1.${{ github.run_number }} \
+            --stacktrace 2>&1 | tee "$LOG_DIR/assemble.log"
+          ccache -s | tee "$LOG_DIR/ccache.txt" || true
+
+      - name: Verify APK
+        id: verify
+        run: |
+          set -o pipefail
+          APK=$(ls "$DOLPHIN_DIR"/Source/Android/app/build/outputs/apk/release/*.apk | head -1)
+          OUT="CODBlackOps-Mobile-v0.1.${{ github.run_number }}-arm64-v8a.apk"
+          cp "$APK" "$OUT"
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          {
+            echo "APK: $OUT ($(stat -c %s "$OUT") bytes)"
+            "$BT/aapt2" dump badging "$OUT" | grep -E "^(package|application-label|launchable-activity|native-code|sdkVersion|targetSdkVersion)"
+            "$BT/apksigner" verify --print-certs "$OUT" | head -5
+            unzip -l "$OUT" | grep -E "lib/arm64-v8a/.*\.so" || true
+            unzip -l "$OUT" | grep -c "assets/Sys/" || true
+          } 2>&1 | tee "$LOG_DIR/apk-info.txt"
+          unzip -l "$OUT" | grep -q "lib/arm64-v8a/libmain.so"
+          "$BT/aapt2" dump badging "$OUT" | grep -q "launchable-activity: name='com.codblackops.mobile.ui.LauncherActivity'"
+          echo "APK_FILE=$OUT" >> "$GITHUB_ENV"
+
+      - uses: actions/upload-artifact@v4
+        if: steps.verify.outcome == 'success'
+        with:
+          name: CODBlackOps-Mobile-arm64-v8a
+          path: ${{ env.APK_FILE }}
+          if-no-files-found: error
+
+      - name: Publish GitHub release
+        if: steps.verify.outcome == 'success' && github.event_name != 'pull_request'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.1.${{ github.run_number }}
+          name: Call of Duty Black Ops Mobile v0.1.${{ github.run_number }}
+          prerelease: true
+          files: ${{ env.APK_FILE }}
+          body: |
+            Build otomatis dari commit ${{ github.sha }}.
+            APK ARM64 (arm64-v8a) berisi launcher + core Dolphin 2609a. Lihat README untuk instalasi,
+            kompatibilitas, dan batasan. File game tidak disertakan.
+
+      - name: Publish CI status (branch ci-status)
+        if: always() && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/ci-status && cd /tmp/ci-status
+          git init -q -b ci-status
+          cp "$LOG_DIR"/*.txt . 2>/dev/null || true
+          for f in "$LOG_DIR"/*.log; do [ -f "$f" ] && tail -n 1500 "$f" > "$(basename "$f")"; done
+          [ -f "$LOG_DIR/assemble.log" ] && grep -n -E "error:|e: |FAILED|BUILD (SUCCESSFUL|FAILED)|What went wrong" "$LOG_DIR/assemble.log" | head -200 > assemble-errors.txt || true
+          [ -f "$LOG_DIR/unit-tests.log" ] && grep -n -E "error:|e: |FAILED|BUILD (SUCCESSFUL|FAILED)|What went wrong|tests completed" "$LOG_DIR/unit-tests.log" | head -200 > unit-test-errors.txt || true
+          cat > STATUS.txt <<EOF
+          run=${{ github.run_number }}
+          sha=${{ github.sha }}
+          job=${{ job.status }}
+          logic=${{ steps.logic.outcome }}
+          prepare=${{ steps.prepare.outcome }}
+          sdk=${{ steps.sdk.outcome }}
+          unittests=${{ steps.unittests.outcome }}
+          assemble=${{ steps.assemble.outcome }}
+          verify=${{ steps.verify.outcome }}
+          EOF
+          git add -A
+          git -c user.name="ci" -c user.email="ci@users.noreply.github.com" commit -q -m "CI status run ${{ github.run_number }} (${{ job.status }})"
+          git push -f "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" ci-status

@@ -1,0 +1,426 @@
+diff --git a/Source/Android/app/build.gradle.kts b/Source/Android/app/build.gradle.kts
+index 9c696cc..9e89ea7 100644
+--- a/Source/Android/app/build.gradle.kts
++++ b/Source/Android/app/build.gradle.kts
+@@ -36,13 +36,15 @@ android {
+     }
+ 
+     defaultConfig {
+-        applicationId = "org.dolphinemu.dolphinemu"
++        // CODBlackOps-Mobile: standalone single-game app built on the Dolphin core.
++        applicationId = "com.codblackops.mobile"
+         minSdk = 24
+         targetSdk = 37
+ 
+-        versionCode = getBuildVersionCode()
++        versionCode = (project.findProperty("codVersionCode") ?: "1").toString().toInt()
+ 
+-        versionName = getGitVersion()
++        versionName = (project.findProperty("codVersionName") ?: "0.1.0").toString() +
++            " (Dolphin " + getGitVersion() + ")"
+ 
+         buildConfigField("String", "GIT_HASH", "\"${getGitHash()}\"")
+         buildConfigField("String", "BRANCH", "\"${getBranch()}\"")
+@@ -69,7 +71,7 @@ android {
+                 signingConfig = signingConfigs.getByName("release")
+             }
+ 
+-            resValue("string", "app_name_suffixed", "Dolphin Emulator")
++            resValue("string", "app_name_suffixed", "Call of Duty Black Ops Mobile")
+             isMinifyEnabled = true
+             isShrinkResources = true
+             proguardFiles(
+@@ -81,7 +83,7 @@ android {
+         // Signed by debug key disallowing distribution on Play Store.
+         // Attaches "debug" suffix to version and package name, allowing installation alongside the release build.
+         debug {
+-            resValue("string", "app_name_suffixed", "Dolphin Debug")
++            resValue("string", "app_name_suffixed", "COD Black Ops Mobile (Debug)")
+             applicationIdSuffix = ".debug"
+             versionNameSuffix = "-debug"
+             isJniDebuggable = true
+@@ -100,7 +102,8 @@ android {
+         ndk {
+             // We only officially support arm64-v8a and x86_64.
+             // If you want to try building other ABIs anyway, you need -DENABLE_GENERIC=ON.
+-            abiFilters += listOf("arm64-v8a", "x86_64") //, "armeabi-v7a", "x86"
++            // CODBlackOps-Mobile targets ARM64 Android devices (Xiaomi Pad 6 / Snapdragon 870).
++            abiFilters += listOf("arm64-v8a")
+         }
+ 
+         externalNativeBuild {
+@@ -108,12 +111,19 @@ android {
+                 arguments(
+                     "-DANDROID_STL=c++_static",
+                     "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON",
+-                    "-DCMAKE_BUILD_TYPE=RelWithDebInfo"
++                    "-DCMAKE_BUILD_TYPE=Release" // CODBlackOps-Mobile: smaller CI build
+                     // , "-DENABLE_GENERIC=ON"
+                 )
+ 
+-                // Uncomment the line below if you don't want to build the C++ unit tests
+-                //targets("main", "hook_impl", "main_hook", "gsl_alloc_hook", "file_redirect_hook")
++                if (System.getenv("USE_CCACHE") == "1") {
++                    arguments(
++                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
++                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache"
++                    )
++                }
++
++                // Skip Dolphin's C++ unit tests; only the libraries the APK needs are built.
++                targets("main", "hook_impl", "main_hook", "gsl_alloc_hook", "file_redirect_hook")
+             }
+         }
+     }
+@@ -172,6 +182,9 @@ dependencies {
+     implementation(libs.androidx.compose.ui.tooling.preview)
+ 
+     implementation(libs.accompanist)
++
++    // CODBlackOps-Mobile pure-logic unit tests (scanner, settings mapping, input math).
++    testImplementation("junit:junit:4.13.2")
+ }
+ 
+ fun getGitVersion(): String {
+diff --git a/Source/Android/app/src/main/AndroidManifest.xml b/Source/Android/app/src/main/AndroidManifest.xml
+index 5ff6ff0..704fa72 100644
+--- a/Source/Android/app/src/main/AndroidManifest.xml
++++ b/Source/Android/app/src/main/AndroidManifest.xml
+@@ -31,6 +31,10 @@
+     <uses-permission android:name="com.android.providers.tv.permission.WRITE_EPG_DATA"/>
+     <uses-permission android:name="android.permission.VIBRATE"/>
+     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
++    <!-- CODBlackOps-Mobile: direct access to /storage/emulated/0/CODBlackOps (games + saves). -->
++    <uses-permission
++        android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
++        tools:ignore="ScopedStorage"/>
+ 
+     <application
+         android:name=".DolphinApplication"
+@@ -53,19 +57,29 @@
+             android:shell="true"
+             tools:targetApi="29" />
+ 
++        <!-- CODBlackOps-Mobile launcher replaces Dolphin's game browser as the home-screen entry. -->
+         <activity
+-            android:name=".ui.main.MainActivity"
++            android:name="com.codblackops.mobile.ui.LauncherActivity"
+             android:exported="true"
+-            android:theme="@style/Theme.Dolphin.Splash.Main">
+-
+-            <!-- This intentfilter marks this Activity as the one that gets launched from Home screen. -->
++            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
++            android:theme="@style/Theme.CodBlackOps">
+             <intent-filter>
+                 <action android:name="android.intent.action.MAIN" />
+-
+                 <category android:name="android.intent.category.LAUNCHER" />
+             </intent-filter>
+         </activity>
+ 
++        <activity
++            android:name="com.codblackops.mobile.ui.ControlLayoutEditorActivity"
++            android:exported="false"
++            android:screenOrientation="sensorLandscape"
++            android:theme="@style/Theme.CodBlackOps.Fullscreen"/>
++
++        <activity
++            android:name=".ui.main.MainActivity"
++            android:exported="false"
++            android:theme="@style/Theme.Dolphin.Splash.Main"/>
++
+         <activity
+             android:name=".ui.main.TvMainActivity"
+             android:exported="true"
+@@ -74,8 +88,6 @@
+             <!-- This intentfilter marks this Activity as the one that gets launched from Home screen. -->
+             <intent-filter>
+                 <action android:name="android.intent.action.MAIN"/>
+-
+-                <category android:name="android.intent.category.LEANBACK_LAUNCHER"/>
+             </intent-filter>
+         </activity>
+ 
+diff --git a/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/activities/EmulationActivity.kt b/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/activities/EmulationActivity.kt
+index 23ffe96..69c35d9 100644
+--- a/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/activities/EmulationActivity.kt
++++ b/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/activities/EmulationActivity.kt
+@@ -233,6 +233,9 @@ class EmulationActivity : AppCompatActivity(), ThemeProvider {
+         if (NativeLibrary.IsGameMetadataValid())
+             title = NativeLibrary.GetCurrentTitleDescription()
+ 
++        // CODBlackOps-Mobile: attach the Black Ops FPS touch HUD, gyro and gamepad layer.
++        com.codblackops.mobile.emulation.EmulationHooks.onCreate(this, binding.root)
++
+         if (skylanderSlots.isEmpty()) {
+             for (i in 0..7) {
+                 skylanderSlots.add(SkylanderSlot(getString(R.string.skylander_slot, i + 1), i))
+@@ -319,6 +322,7 @@ class EmulationActivity : AppCompatActivity(), ThemeProvider {
+         }
+ 
+         DolphinSensorEventListener.setDeviceRotation(windowManager.defaultDisplay.rotation)
++        com.codblackops.mobile.emulation.EmulationHooks.onResume(this)
+     }
+ 
+     override fun onStop() {
+@@ -329,7 +333,7 @@ class EmulationActivity : AppCompatActivity(), ThemeProvider {
+     fun onTitleChanged() {
+         if (!menuToastShown) {
+             // The reason why this doesn't run earlier is because we want to be sure the boot succeeded.
+-            Toast.makeText(this, R.string.emulation_menu_help, Toast.LENGTH_LONG).show()
++            com.codblackops.mobile.emulation.EmulationHooks.onBootSucceeded(this)
+             menuToastShown = true
+         }
+ 
+@@ -346,10 +350,16 @@ class EmulationActivity : AppCompatActivity(), ThemeProvider {
+     }
+ 
+     override fun onDestroy() {
++        com.codblackops.mobile.emulation.EmulationHooks.onDestroy(this, isFinishing)
+         super.onDestroy()
+         settings.close()
+     }
+ 
++    override fun onPause() {
++        com.codblackops.mobile.emulation.EmulationHooks.onPause(this)
++        super.onPause()
++    }
++
+     override fun onBackPressed() {
+         if (!closeSubmenu()) {
+             toggleMenu()
+@@ -365,6 +375,12 @@ class EmulationActivity : AppCompatActivity(), ThemeProvider {
+     }
+ 
+     private fun enableFullscreenImmersive() {
++        if (!com.codblackops.mobile.emulation.EmulationHooks.useImmersiveFullscreen(this)) {
++            WindowCompat.setDecorFitsSystemWindows(window, true)
++            WindowInsetsControllerCompat(window, window.decorView)
++                .show(WindowInsetsCompat.Type.systemBars())
++            return
++        }
+         WindowCompat.setDecorFitsSystemWindows(window, false)
+         WindowInsetsControllerCompat(window, window.decorView).let { controller ->
+             controller.hide(WindowInsetsCompat.Type.systemBars())
+@@ -403,6 +419,8 @@ class EmulationActivity : AppCompatActivity(), ThemeProvider {
+         )
+     }
+ 
++    fun toggleEmulatorMenu() = toggleMenu()
++
+     private fun toggleMenu() {
+         if (!closeMenu()) {
+             // Removing the menu failed, so that means it wasn't visible. Add it.
+@@ -550,6 +568,9 @@ class EmulationActivity : AppCompatActivity(), ThemeProvider {
+     // Gets button presses
+     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+         if (!menuVisible) {
++            if (com.codblackops.mobile.emulation.EmulationHooks.dispatchKeyEvent(this, event)) {
++                return true
++            }
+             if (ControllerInterface.dispatchKeyEvent(event)) {
+                 return true
+             }
+@@ -987,6 +1008,9 @@ class EmulationActivity : AppCompatActivity(), ThemeProvider {
+ 
+     override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
+         if (!menuVisible) {
++            if (com.codblackops.mobile.emulation.EmulationHooks.dispatchGenericMotionEvent(this, event)) {
++                return true
++            }
+             if (ControllerInterface.dispatchGenericMotionEvent(event)) {
+                 return true
+             }
+diff --git a/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/overlay/InputOverlay.kt b/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/overlay/InputOverlay.kt
+index 3d991fe..d90e3d2 100644
+--- a/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/overlay/InputOverlay.kt
++++ b/Source/Android/app/src/main/java/org/dolphinemu/dolphinemu/overlay/InputOverlay.kt
+@@ -433,6 +433,7 @@ class InputOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(contex
+     }
+ 
+     private fun unregisterControllers() {
++        if (com.codblackops.mobile.emulation.EmulationHooks.isExternalOverlayActive()) return
+         for (i in gcPadRegistered.indices) {
+             if (gcPadRegistered[i])
+                 InputOverrider.unregisterGameCube(i)
+@@ -984,6 +985,16 @@ class InputOverlay(context: Context?, attrs: AttributeSet?) : SurfaceView(contex
+     }
+ 
+     fun refreshControls() {
++        if (com.codblackops.mobile.emulation.EmulationHooks.isExternalOverlayActive()) {
++            // CODBlackOps-Mobile owns emulated controller 0 through InputOverrider; keep Dolphin's
++            // own overlay empty so the two never fight over registration or touch input.
++            overlayButtons.removeAll(overlayButtons)
++            overlayDpads.removeAll(overlayDpads)
++            overlayJoysticks.removeAll(overlayJoysticks)
++            isFirstRun = false
++            invalidate()
++            return
++        }
+         unregisterControllers()
+ 
+         // Remove all the overlay buttons from the HashSet.
+diff --git a/Source/Core/Core/HW/WiimoteEmu/Dynamics.cpp b/Source/Core/Core/HW/WiimoteEmu/Dynamics.cpp
+index ebf24f7..26f4723 100644
+--- a/Source/Core/Core/HW/WiimoteEmu/Dynamics.cpp
++++ b/Source/Core/Core/HW/WiimoteEmu/Dynamics.cpp
+@@ -80,9 +80,10 @@ Common::Quaternion ComplementaryFilter(const Common::Quaternion& gyroscope,
+ }
+ 
+ void EmulateShake(PositionalState* state, ControllerEmu::Shake* const shake_group,
+-                  float time_elapsed)
++                  float time_elapsed, const ControllerEmu::InputOverrideFunction& override_func)
+ {
+-  auto target_position = shake_group->GetState() * float(shake_group->GetIntensity() / 2);
++  auto target_position =
++      shake_group->GetState(true, override_func) * float(shake_group->GetIntensity() / 2);
+   for (std::size_t i = 0; i != target_position.data.size(); ++i)
+   {
+     if (state->velocity.data[i] * std::copysign(1.f, target_position.data[i]) < 0 ||
+diff --git a/Source/Core/Core/HW/WiimoteEmu/Dynamics.h b/Source/Core/Core/HW/WiimoteEmu/Dynamics.h
+index 8f35c30..f568520 100644
+--- a/Source/Core/Core/HW/WiimoteEmu/Dynamics.h
++++ b/Source/Core/Core/HW/WiimoteEmu/Dynamics.h
+@@ -75,7 +75,8 @@ void ApproachPositionWithJerk(PositionalState* state, const Common::Vec3& target
+ void ApproachAngleWithAccel(RotationalState* state, const Common::Vec3& target, float max_accel,
+                             float time_elapsed);
+ 
+-void EmulateShake(PositionalState* state, ControllerEmu::Shake* shake_group, float time_elapsed);
++void EmulateShake(PositionalState* state, ControllerEmu::Shake* shake_group, float time_elapsed,
++                  const ControllerEmu::InputOverrideFunction& override_func = {});
+ void EmulateTilt(RotationalState* state, ControllerEmu::Tilt* tilt_group, float time_elapsed);
+ void EmulateSwing(MotionState* state, ControllerEmu::Force* swing_group, float time_elapsed);
+ void EmulatePoint(MotionState* state, ControllerEmu::Cursor* ir_group,
+diff --git a/Source/Core/Core/HW/WiimoteEmu/Extension/Nunchuk.cpp b/Source/Core/Core/HW/WiimoteEmu/Extension/Nunchuk.cpp
+index 6745602..5ec5fee 100644
+--- a/Source/Core/Core/HW/WiimoteEmu/Extension/Nunchuk.cpp
++++ b/Source/Core/Core/HW/WiimoteEmu/Extension/Nunchuk.cpp
+@@ -77,7 +77,7 @@ void Nunchuk::BuildDesiredExtensionState(DesiredExtensionState* target_state)
+   // Acceleration data:
+   EmulateSwing(&m_swing_state, m_swing, 1.f / ::Wiimote::UPDATE_FREQ);
+   EmulateTilt(&m_tilt_state, m_tilt, 1.f / ::Wiimote::UPDATE_FREQ);
+-  EmulateShake(&m_shake_state, m_shake, 1.f / ::Wiimote::UPDATE_FREQ);
++  EmulateShake(&m_shake_state, m_shake, 1.f / ::Wiimote::UPDATE_FREQ, m_input_override_function);
+ 
+   const auto transformation =
+       GetRotationalMatrix(-m_tilt_state.angle) * GetRotationalMatrix(-m_swing_state.angle);
+diff --git a/Source/Core/Core/HW/WiimoteEmu/WiimoteEmu.cpp b/Source/Core/Core/HW/WiimoteEmu/WiimoteEmu.cpp
+index bbbea66..91ee84f 100644
+--- a/Source/Core/Core/HW/WiimoteEmu/WiimoteEmu.cpp
++++ b/Source/Core/Core/HW/WiimoteEmu/WiimoteEmu.cpp
+@@ -837,7 +837,7 @@ void Wiimote::StepDynamics()
+   EmulateSwing(&m_swing_state, m_swing, 1.f / ::Wiimote::UPDATE_FREQ);
+   EmulateTilt(&m_tilt_state, m_tilt, 1.f / ::Wiimote::UPDATE_FREQ);
+   EmulatePoint(&m_point_state, m_ir, m_input_override_function, 1.f / ::Wiimote::UPDATE_FREQ);
+-  EmulateShake(&m_shake_state, m_shake, 1.f / ::Wiimote::UPDATE_FREQ);
++  EmulateShake(&m_shake_state, m_shake, 1.f / ::Wiimote::UPDATE_FREQ, m_input_override_function);
+   EmulateIMUCursor(&m_imu_cursor_state, m_imu_ir, m_imu_accelerometer, m_imu_gyroscope,
+                    1.f / ::Wiimote::UPDATE_FREQ);
+ }
+diff --git a/Source/Core/InputCommon/ControllerEmu/ControlGroup/Force.cpp b/Source/Core/InputCommon/ControllerEmu/ControlGroup/Force.cpp
+index d74c4df..5658c05 100644
+--- a/Source/Core/InputCommon/ControllerEmu/ControlGroup/Force.cpp
++++ b/Source/Core/InputCommon/ControllerEmu/ControlGroup/Force.cpp
+@@ -3,6 +3,8 @@
+ 
+ #include "InputCommon/ControllerEmu/ControlGroup/Force.h"
+ 
++#include <cstddef>
++#include <optional>
+ #include <string>
+ 
+ #include "Common/Common.h"
+@@ -155,6 +157,11 @@ Shake::Shake(const std::string& name_, ControlState default_intensity_scale)
+ }
+ 
+ Shake::StateData Shake::GetState(bool adjusted) const
++{
++  return GetState(adjusted, {});
++}
++
++Shake::StateData Shake::GetState(bool adjusted, const InputOverrideFunction& override_func) const
+ {
+   const float x = controls[0]->GetState();
+   const float y = controls[1]->GetState();
+@@ -162,6 +169,18 @@ Shake::StateData Shake::GetState(bool adjusted) const
+ 
+   StateData result = {x, y, z};
+ 
++  if (override_func)
++  {
++    for (std::size_t i = 0; i != result.data.size(); ++i)
++    {
++      if (const std::optional<ControlState> state_override =
++              override_func(name, controls[i]->name, result.data[i]))
++      {
++        result.data[i] = static_cast<float>(*state_override);
++      }
++    }
++  }
++
+   // FYI: Unadjusted values are used in UI.
+   if (adjusted)
+     for (auto& c : result.data)
+diff --git a/Source/Core/InputCommon/ControllerEmu/ControlGroup/Force.h b/Source/Core/InputCommon/ControllerEmu/ControlGroup/Force.h
+index abe02a4..15b33b4 100644
+--- a/Source/Core/InputCommon/ControllerEmu/ControlGroup/Force.h
++++ b/Source/Core/InputCommon/ControllerEmu/ControlGroup/Force.h
+@@ -50,6 +50,8 @@ public:
+   explicit Shake(const std::string& name, ControlState default_intensity_scale = 1);
+ 
+   StateData GetState(bool adjusted = true) const;
++  // CODBlackOps-Mobile: lets touch/gyro input (InputOverrider) trigger shake motions.
++  StateData GetState(bool adjusted, const InputOverrideFunction& override_func) const;
+ 
+   ControlState GetDeadzone() const;
+ 
+diff --git a/Source/Core/InputCommon/ControllerInterface/Touch/InputOverrider.cpp b/Source/Core/InputCommon/ControllerInterface/Touch/InputOverrider.cpp
+index 9ddbaff..ce8edcb 100644
+--- a/Source/Core/InputCommon/ControllerInterface/Touch/InputOverrider.cpp
++++ b/Source/Core/InputCommon/ControllerInterface/Touch/InputOverrider.cpp
+@@ -91,6 +91,9 @@ const ControlsMap s_wiimote_controls_map = {{
+      ControlID::WIIMOTE_IR_X},
+     {{WiimoteEmu::Wiimote::IR_GROUP, ControllerEmu::ReshapableInput::Y_INPUT_OVERRIDE},
+      ControlID::WIIMOTE_IR_Y},
++    {{"Shake", "X"}, ControlID::WIIMOTE_SHAKE_X},
++    {{"Shake", "Y"}, ControlID::WIIMOTE_SHAKE_Y},
++    {{"Shake", "Z"}, ControlID::WIIMOTE_SHAKE_Z},
+ }};
+ 
+ const ControlsMap s_nunchuk_controls_map = {{
+@@ -102,6 +105,9 @@ const ControlsMap s_nunchuk_controls_map = {{
+      ControlID::NUNCHUK_STICK_X},
+     {{WiimoteEmu::Nunchuk::STICK_GROUP, ControllerEmu::ReshapableInput::Y_INPUT_OVERRIDE},
+      ControlID::NUNCHUK_STICK_Y},
++    {{"Shake", "X"}, ControlID::NUNCHUK_SHAKE_X},
++    {{"Shake", "Y"}, ControlID::NUNCHUK_SHAKE_Y},
++    {{"Shake", "Z"}, ControlID::NUNCHUK_SHAKE_Z},
+ }};
+ 
+ const ControlsMap s_classic_controls_map = {{
+diff --git a/Source/Core/InputCommon/ControllerInterface/Touch/InputOverrider.h b/Source/Core/InputCommon/ControllerInterface/Touch/InputOverrider.h
+index 6217b44..2aaba0c 100644
+--- a/Source/Core/InputCommon/ControllerInterface/Touch/InputOverrider.h
++++ b/Source/Core/InputCommon/ControllerInterface/Touch/InputOverrider.h
+@@ -68,12 +68,20 @@ enum ControlID
+   CLASSIC_RIGHT_STICK_X = 54,
+   CLASSIC_RIGHT_STICK_Y = 55,
+ 
++  // CODBlackOps-Mobile additions: shake motions for melee / grenade gestures.
++  WIIMOTE_SHAKE_X = 56,
++  WIIMOTE_SHAKE_Y = 57,
++  WIIMOTE_SHAKE_Z = 58,
++  NUNCHUK_SHAKE_X = 59,
++  NUNCHUK_SHAKE_Y = 60,
++  NUNCHUK_SHAKE_Z = 61,
++
+   NUMBER_OF_CONTROLS,
+ 
+   FIRST_GC_CONTROL = GCPAD_A_BUTTON,
+   LAST_GC_CONTROL = GCPAD_C_STICK_Y,
+   FIRST_WII_CONTROL = WIIMOTE_A_BUTTON,
+-  LAST_WII_CONTROL = CLASSIC_RIGHT_STICK_Y,
++  LAST_WII_CONTROL = NUNCHUK_SHAKE_Z,
+ 
+ };
+ void RegisterGameCubeInputOverrider(int controller_index);

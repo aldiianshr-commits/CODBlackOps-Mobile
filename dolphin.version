@@ -1,0 +1,4 @@
+# Dolphin release that the APK is built from. The integration patch in patches/ is made for
+# exactly this commit; update both together.
+DOLPHIN_TAG=2609a
+DOLPHIN_COMMIT=409881c34357d0f105fd473167d15ab0bd9c1628
