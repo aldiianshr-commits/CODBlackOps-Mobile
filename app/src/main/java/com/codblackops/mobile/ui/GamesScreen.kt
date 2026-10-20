@@ -141,7 +141,7 @@ fun GamesScreen(state: LauncherState) {
         item {
             SectionCard("Backend") {
                 InfoRow("Aktif", backend.displayName)
-                InfoRow("Status", if (ready) "Siap (Dolphin ${DolphinBridge.version()})" else "Menginisialisasi…")
+                InfoRow("Status", if (ready) "Siap (${DolphinBridge.version()})" else "Menginisialisasi…")
                 NoteText(backend.technique)
                 val others = BackendRegistry.all.filter { it !== backend }
                 for (o in others) NoteText("${o.displayName}: ${o.unavailableReason() ?: "tersedia"}")

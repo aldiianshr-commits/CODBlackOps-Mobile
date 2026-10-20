@@ -74,22 +74,30 @@ check "dolphin_core_loaded_and_initialised" "[ $READY = 1 ]"
 adb shell input keyevent KEYCODE_HOME
 sleep 2
 adb shell am start -W -n $PKG/$ACT > /dev/null
-for i in $(seq 1 30); do
-  sleep 2
-  dump_ui games
-  grep -q "GAME LAIN" "$OUT/games.xml" 2>/dev/null && break
+sleep 8
+# The game list is below the backend/folder cards: scroll through it and keep every dump.
+dump_ui games
+cp "$OUT/games.xml" "$OUT/games-all.xml"
+for i in $(seq 1 8); do
+  adb shell input swipe 900 1500 900 400 400
+  sleep 1
+  dump_ui "games-$i"
+  cat "$OUT/games-$i.xml" >> "$OUT/games-all.xml"
 done
+# scroll back up so the navigation taps below hit the rail
+for i in $(seq 1 8); do adb shell input swipe 900 400 900 1500 200; done
 adb logcat -d -s CODBlackOps > "$OUT/codbo-log.txt"
 
 check "scan_counts_three_candidates" "grep -q 'Pindai selesai: 3 file kandidat' '$OUT/codbo-log.txt'"
-check "gc_image_listed" "grep -q 'homebrew_test_gc.iso' '$OUT/games.xml'"
-check "gc_image_validated_by_dolphin_as_other_game" "grep -q 'GAME LAIN' '$OUT/games.xml'"
-check "dolphin_reads_title" "grep -q 'CODBO SMOKE TEST DISC' '$OUT/games.xml'"
-check "invalid_images_flagged" "grep -q 'TIDAK VALID' '$OUT/games.xml'"
-check "non_disc_file_ignored" "! grep -q 'readme.txt' '$OUT/games.xml'"
+check "gc_image_listed" "grep -q 'homebrew_test_gc.iso' '$OUT/games-all.xml'"
+check "gc_image_validated_by_dolphin_as_other_game" "grep -q 'GAME LAIN' '$OUT/games-all.xml'"
+check "dolphin_reads_title" "grep -q 'CODBO SMOKE TEST DISC' '$OUT/games-all.xml'"
+check "invalid_images_flagged" "grep -q 'TIDAK VALID' '$OUT/games-all.xml'"
+check "non_disc_file_ignored" "! grep -q 'readme.txt' '$OUT/games-all.xml'"
 check "save_folder_created" "adb shell ls -d /sdcard/CODBlackOps/Save/Backups > /dev/null 2>&1"
 
 # Settings screens render and show the honest capability notes.
+dump_ui games
 tap_text games "Grafis"; sleep 3; dump_ui graphics
 check "graphics_screen_shows_resolutions" "grep -q '1080p' '$OUT/graphics.xml'"
 tap_text graphics "Kontrol"; sleep 3; dump_ui controls

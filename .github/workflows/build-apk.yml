@@ -197,13 +197,14 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Smoke test on Android 11 x86_64 emulator (ARM64 binary translation)
+      - name: Smoke test on Android 11 x86_64 tablet emulator (ARM64 binary translation)
         id: smoke
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 30
           arch: x86_64
           target: google_apis
+          profile: pixel_c
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           script: bash scripts/emulator_smoke_test.sh "$(ls apk/*.apk | head -1)" smoke-out

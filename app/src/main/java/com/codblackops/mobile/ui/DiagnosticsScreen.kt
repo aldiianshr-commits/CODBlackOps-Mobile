@@ -251,7 +251,7 @@ private fun exportLogs(ctx: Context, device: DeviceInfo): String {
     AppLog.logFile()?.let { files.add("launcher.log" to it) }
     AppLog.logFile()?.parentFile?.let { File(it, "launcher.old.log") }?.takeIf { it.isFile }?.let { files.add("launcher.old.log" to it) }
     DolphinBridge.userDirectory()?.let { File(it, "Logs/dolphin.log") }?.takeIf { it.isFile }?.let { files.add("dolphin.log" to it) }
-    val summary = device.summary() + "\nDolphin: " + DolphinBridge.version() + "\n"
+    val summary = device.summary() + "\nBackend: " + DolphinBridge.version() + "\n"
     if (StorageAccess.hasFolderAccess(ctx) && AppPaths.ensureDirs()) {
         val dir = File(AppPaths.logsDir, stamp).apply { mkdirs() }
         for ((name, f) in files) f.copyTo(File(dir, name), overwrite = true)

@@ -44,10 +44,12 @@ object DolphinBridge {
         true
     }
 
+    /** e.g. "Dolphin 2609a" (the "-dirty" suffix only means our integration patch is applied). */
     fun version(): String = try {
-        NativeLibrary.GetVersionString()
+        val v = NativeLibrary.GetVersionString().removeSuffix("-dirty")
+        if (v.startsWith("Dolphin")) v else "Dolphin $v"
     } catch (t: Throwable) {
-        "tidak diketahui"
+        "Dolphin (versi tidak diketahui)"
     }
 
     fun userDirectory(): String? = if (isReady()) DirectoryInitialization.getUserDirectory() else null
