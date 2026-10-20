@@ -35,8 +35,12 @@ data class ScannedGame(
     /** Effective game ID (backend first, header second). */
     val gameId: String? get() = backendGameId?.takeIf { it.isNotEmpty() } ?: header.gameId
 
+    /**
+     * Dolphin's title (banner / GameTDB). When a disc has neither, Dolphin falls back to the file
+     * name; the internal name from the disc header is more useful in that case.
+     */
     val title: String
-        get() = backendTitle?.takeIf { it.isNotBlank() }
+        get() = backendTitle?.takeIf { it.isNotBlank() && it != fileName }
             ?: header.internalTitle?.takeIf { it.isNotBlank() }
             ?: fileName
 
